@@ -69,14 +69,6 @@ export const saveSisterGreeting = (
     }
   }
 
-  if (typeof window !== "undefined") {
-    fetch("/api/sisters", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedSister),
-    }).catch(() => {});
-  }
-
   return updatedSister;
 };
 
@@ -86,7 +78,6 @@ export const deleteSisterGreeting = (id: string): boolean => {
 
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-    fetch(`/api/sisters/${id}`, { method: "DELETE" }).catch(() => {});
   }
   return true;
 };
