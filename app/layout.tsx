@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://alokpoddarbaishya.com.np"),
   title: "Raksha Bandhan Sibling Scrapbook 🧵✨",
   description: "A personalized, humorous, scrapbook-style greeting experience for your sister on Raksha Bandhan.",
   icons: {
