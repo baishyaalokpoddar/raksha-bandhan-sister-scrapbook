@@ -173,9 +173,8 @@ export const getStorageUsageKB = (): number => {
 };
 
 export const createNewBlankSister = (selectedTheme: ScrapbookTheme = "chibi-anime"): SisterGreeting => {
-  const randomSlug = "sister-" + Math.random().toString(36).substring(2, 7);
   return {
-    id: randomSlug,
+    id: "sister-surprise",
     sisterName: "",
     nickname: "",
     brotherName: "Alok Poddar Baishya",

@@ -65,10 +65,21 @@ export const SisterForm: React.FC<SisterFormProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setStorageUsageKB(getStorageUsageKB());
-  }, []);
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+      setStorageUsageKB(getStorageUsageKB());
+      // On client mount only, generate random slug if it was a default placeholder
+      if (formData.id === "sister-surprise" && !isEditing) {
+        const randomId = "sister-" + Math.random().toString(36).substring(2, 7);
+        setFormData((prev) => ({ ...prev, id: randomId }));
+      }
+    }
+  }, [isEditing]);
 
   const handleManualClean = () => {
     soundFx.playPop();
@@ -149,7 +160,7 @@ export const SisterForm: React.FC<SisterFormProps> = ({
     }
 
     let slug = formData.id;
-    if (!slug || slug.startsWith("sister-")) {
+    if (!slug || slug === "sister-surprise" || slug.startsWith("sister-")) {
       slug = (formData.nickname || formData.sisterName)
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
@@ -172,12 +183,13 @@ export const SisterForm: React.FC<SisterFormProps> = ({
     setTimeout(() => setSavedSuccess(false), 3500);
   };
 
-  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/sister/${formData.id}` : `/sister/${formData.id}`;
+  const displayShareUrl = mounted && origin ? `${origin}/sister/${formData.id}` : `/sister/${formData.id}`;
 
   const handleCopyLink = () => {
     soundFx.playPop();
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(shareUrl);
+      const fullUrl = `${window.location.origin}/sister/${formData.id}`;
+      navigator.clipboard.writeText(fullUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2500);
     }
@@ -265,8 +277,8 @@ export const SisterForm: React.FC<SisterFormProps> = ({
             <div className="text-xs font-bold text-stone-900">
               Unique Shareable Link:
             </div>
-            <div className="text-xs text-stone-600 font-mono break-all">
-              {shareUrl}
+            <div className="text-xs text-stone-600 font-mono break-all" suppressHydrationWarning>
+              {displayShareUrl}
             </div>
           </div>
         </div>

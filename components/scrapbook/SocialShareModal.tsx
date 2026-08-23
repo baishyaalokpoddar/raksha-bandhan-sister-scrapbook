@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -27,13 +27,23 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
   onClose,
 }) => {
   const [copied, setCopied] = useState(false);
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const shareUrls = getShareUrls(sister, baseUrl);
+  const [mounted, setMounted] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const shareUrls = getShareUrls(sister, mounted && origin ? origin : "");
 
   const handleCopyLink = () => {
     soundFx.playPop();
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(shareUrls.directUrl);
+      const fullUrl = `${window.location.origin}/sister/${sister.id}`;
+      navigator.clipboard.writeText(fullUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
@@ -80,8 +90,8 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
 
           {/* 1-Click Copy Link Box */}
           <div className="bg-stone-50 p-3 rounded-2xl border border-stone-200 mb-4 flex items-center justify-between gap-2">
-            <span className="text-xs font-mono text-stone-600 truncate">
-              {shareUrls.directUrl}
+            <span className="text-xs font-mono text-stone-600 truncate" suppressHydrationWarning>
+              {mounted && origin ? `${origin}/sister/${sister.id}` : `/sister/${sister.id}`}
             </span>
             <button
               onClick={handleCopyLink}
