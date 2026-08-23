@@ -53,8 +53,9 @@ export default function AdminDashboard() {
         {/* Top Header */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-500 text-white flex items-center justify-center shadow-md text-2xl">
-              🧵
+            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-md border-2 border-amber-300 flex-shrink-0 bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/rakhi_logo.jpg" alt="Rakhi Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -74,9 +75,9 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <Link
               href="/"
-              className="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
             >
-              <Home className="w-4 h-4" />
+              <Home className="w-4 h-4 text-stone-500" />
               <span>Home</span>
             </Link>
 
@@ -139,7 +140,7 @@ export default function AdminDashboard() {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
-                            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80";
+                            "/assets/rakhi_chibi_anime.jpg";
                         }}
                       />
                     </div>
@@ -211,46 +212,67 @@ export default function AdminDashboard() {
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-1">
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/sister/${sister.id}`}
                       target="_blank"
-                      className="text-xs font-bold text-red-700 hover:text-red-800 flex items-center gap-1 p-1"
+                      className="flex-1 py-1.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <Eye className="w-3.5 h-3.5 text-stone-500" />
                       <span>Open Greeting</span>
                     </Link>
 
-                    <div className="flex items-center gap-1">
-                      <Link
-                        href={`/admin/edit/${sister.id}`}
-                        className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg text-xs font-medium flex items-center gap-1"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </Link>
+                    <Link
+                      href={`/admin/edit/${sister.id}`}
+                      className="py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-lg border border-amber-200 flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Edit</span>
+                    </Link>
 
-                      <button
-                        onClick={() => handleDelete(sister.id, sister.sisterName)}
-                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                        title="Delete greeting"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(sister.id, sister.sisterName)}
+                      className="py-1.5 px-2.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete greeting"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Floating Add Card for quick creation */}
+        <div className="p-6 bg-gradient-to-r from-red-50 via-amber-50 to-rose-50 rounded-3xl border-2 border-dashed border-red-300 text-center flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-sm text-xl">
+            🎁
+          </div>
+          <div>
+            <h3 className="font-serifHeading font-bold text-lg text-stone-900">
+              Want to add another sister?
+            </h3>
+            <p className="text-xs text-stone-600 max-w-sm mx-auto mt-0.5">
+              Customize photos, roasts, memes, and heartfelt letters for as many sisters as you have.
+            </p>
+          </div>
+          <Link
+            href="/admin/create"
+            className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all transform active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Another Sister Scrapbook</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Share Modal */}
+      {/* Social Share Drawer */}
       {selectedSisterForShare && (
         <SocialShareModal
           sister={selectedSisterForShare}
-          isOpen={true}
+          isOpen={!!selectedSisterForShare}
           onClose={() => setSelectedSisterForShare(null)}
         />
       )}

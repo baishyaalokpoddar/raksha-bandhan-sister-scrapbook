@@ -108,9 +108,12 @@ export const SisterExperienceViewer: React.FC<SisterExperienceViewerProps> = ({
                 <Home className="w-4 h-4 text-white" />
               </Link>
             )}
+            <div className="w-6 h-6 rounded-full overflow-hidden border border-amber-300 bg-white flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/rakhi_logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+            </div>
             <span className="font-serifHeading font-bold text-sm tracking-wide flex items-center gap-1.5">
-              <span>🧵</span>
-              <span className="truncate max-w-[140px] sm:max-w-[180px]">
+              <span className="truncate max-w-[130px] sm:max-w-[170px]">
                 {sister.sisterName}&apos;s Surprise
               </span>
             </span>

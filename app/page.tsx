@@ -39,12 +39,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-dhaka-pattern flex flex-col items-center justify-between text-scrapbook-darkText selection:bg-scrapbook-ginghamRed selection:text-white">
       {/* Top Navbar */}
       <header className="w-full max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-red-700 text-white flex items-center justify-center shadow-md text-xl border border-amber-300">
-            🧵
+        <div className="flex items-center gap-2.5">
+          <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md border-2 border-amber-300 flex-shrink-0 bg-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/rakhi_logo.jpg" alt="Rakhi Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <span className="font-serifHeading font-black text-xl text-white tracking-tight drop-shadow-xs">
+            <span className="font-serifHeading font-black text-xl text-white tracking-tight drop-shadow-xs flex items-center gap-1.5">
               Rakhi Sibling Scrapbook
             </span>
             <span className="block text-[10px] text-amber-200 font-sans -mt-0.5">
@@ -124,12 +125,12 @@ export default function HomePage() {
             onClick={() => soundFx.playPop()}
             className="w-full sm:w-auto px-6 py-4 bg-white/95 hover:bg-white text-stone-800 font-sans font-bold text-sm sm:text-base rounded-2xl shadow-md border-2 border-stone-300 flex items-center justify-center gap-2 transition-all"
           >
-            <span>Try Demo Greeting</span>
+            <span>Try Demo Greeting (Simran)</span>
             <span>👀</span>
           </Link>
         </motion.div>
 
-        {/* Visual Theme Selector Showcase (8 Themes including Anime Reference Styles) */}
+        {/* Visual Theme Selector Showcase */}
         <div className="mt-14 w-full bg-white/95 rounded-3xl p-5 sm:p-7 shadow-xl border border-stone-200 text-left">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
@@ -194,7 +195,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
             {sisters.map((s) => (
               <Link
                 key={s.id}
@@ -203,22 +204,22 @@ export default function HomePage() {
                 className="group p-3.5 rounded-2xl border border-stone-200 hover:border-red-400 bg-stone-50/70 hover:bg-red-50/40 flex flex-col justify-between transition-all"
               >
                 <div>
-                  <div className="w-full h-32 rounded-xl overflow-hidden border border-stone-300 bg-stone-200 group-hover:scale-[1.02] transition-transform mb-3">
+                  <div className="w-full h-28 rounded-xl overflow-hidden border border-stone-300 bg-stone-200 group-hover:scale-[1.02] transition-transform mb-2.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={s.heroPhoto} alt={s.sisterName} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-serifHeading font-bold text-base text-stone-900 truncate">
+                      <span className="font-serifHeading font-bold text-sm text-stone-900 truncate">
                         {s.sisterName}
                       </span>
                     </div>
                     {s.nickname && (
-                      <span className="text-[11px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full inline-block mt-1">
+                      <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full inline-block mt-1">
                         &quot;{s.nickname}&quot;
                       </span>
                     )}
-                    <p className="text-xs text-stone-500 font-sans mt-1.5">
+                    <p className="text-[11px] text-stone-500 font-sans mt-1">
                       Brother: <span className="font-bold text-stone-700">{s.brotherName}</span>
                     </p>
                   </div>
