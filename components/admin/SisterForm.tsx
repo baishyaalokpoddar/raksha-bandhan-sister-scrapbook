@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Save,
@@ -22,6 +22,8 @@ import {
   Trash,
   HardDrive,
   CheckCircle2,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { SisterGreeting, PolaroidMemory, MysteryGift, ScrapbookTheme } from "@/lib/types";
 import { THEME_OPTIONS } from "@/lib/defaultData";
@@ -31,6 +33,7 @@ import {
   getStorageUsageKB,
   buildUniversalShareUrl,
 } from "@/lib/store";
+import { compressImageFile } from "@/lib/imageUtils";
 import { PhotoUploader } from "./PhotoUploader";
 import { LabelEditor } from "./LabelEditor";
 import { LivePreviewModal } from "./LivePreviewModal";
@@ -41,6 +44,164 @@ interface SisterFormProps {
   initialData: SisterGreeting;
   isEditing?: boolean;
 }
+
+const POLAROID_PRESETS = [
+  "/assets/rakhi_chibi_anime.jpg",
+  "/assets/rakhi_mandala_anime.jpg",
+  "/assets/rakhi_crimson_arch.png",
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80",
+];
+
+interface PolaroidRowProps {
+  polaroid: PolaroidMemory;
+  index: number;
+  onUpdate: (field: keyof PolaroidMemory, value: string) => void;
+  onRemove: () => void;
+}
+
+const PolaroidRow: React.FC<PolaroidRowProps> = ({ polaroid, index, onUpdate, onRemove }) => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const compressed = await compressImageFile(file, 600, 600, 0.72);
+      soundFx.playChime();
+      onUpdate("photoUrl", compressed);
+    } catch (err) {
+      console.error("Failed to compress polaroid image:", err);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (typeof ev.target?.result === "string") {
+          onUpdate("photoUrl", ev.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 flex flex-col sm:flex-row gap-3.5 items-start sm:items-center">
+      {/* Preview */}
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-stone-300 bg-stone-200 flex-shrink-0 shadow-inner group">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={polaroid.photoUrl}
+          alt="Polaroid Memory"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/assets/rakhi_chibi_anime.jpg";
+          }}
+        />
+        {uploading && (
+          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-[10px] gap-1">
+            <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+            <span>Saving...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Inputs */}
+      <div className="flex-1 w-full space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+            className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-xl text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Photo #{index + 1}</span>
+              </>
+            )}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleUpload}
+          />
+          <span className="text-[11px] text-stone-400 font-sans">or paste URL below</span>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Image URL or /assets/..."
+          value={polaroid.photoUrl.startsWith("data:") ? "[Uploaded Photo Saved]" : polaroid.photoUrl}
+          onChange={(e) => onUpdate("photoUrl", e.target.value)}
+          className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300 font-mono"
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="Caption (e.g. Partner in crime always)"
+            value={polaroid.caption}
+            onChange={(e) => onUpdate("caption", e.target.value)}
+            className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300 font-bold"
+          />
+          <input
+            type="text"
+            placeholder="Date / Memory tag (e.g. Childhood Memory)"
+            value={polaroid.date || ""}
+            onChange={(e) => onUpdate("date", e.target.value)}
+            className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300"
+          />
+        </div>
+
+        {/* Quick presets */}
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <span className="text-[10px] font-semibold text-stone-400 uppercase">Presets:</span>
+          <div className="flex flex-wrap gap-1">
+            {POLAROID_PRESETS.map((preset, pIdx) => (
+              <button
+                key={pIdx}
+                type="button"
+                onClick={() => {
+                  soundFx.playPop();
+                  onUpdate("photoUrl", preset);
+                }}
+                className={`w-6 h-6 rounded-md overflow-hidden border transition-all ${
+                  polaroid.photoUrl === preset ? "ring-2 ring-red-500 scale-110 shadow-xs" : "opacity-75 hover:opacity-100"
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={preset} alt="Preset" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Delete button */}
+      <button
+        type="button"
+        onClick={onRemove}
+        title="Remove this photo"
+        className="p-2 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 self-end sm:self-center transition-colors"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 const GIFT_SUGGESTIONS = [
   { title: "Momo Treat", perk: "Unlimited Momo Treat at Dalle / Bota (My treat!) 🥟", emoji: "🥟" },
@@ -601,49 +762,13 @@ export const SisterForm: React.FC<SisterFormProps> = ({
 
               <div className="space-y-3.5">
                 {formData.polaroids.map((polaroid, index) => (
-                  <div
+                  <PolaroidRow
                     key={polaroid.id || index}
-                    className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex flex-col sm:flex-row gap-3 items-start sm:items-center"
-                  >
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-stone-300 bg-stone-200 flex-shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={polaroid.photoUrl} alt="Polaroid" className="w-full h-full object-cover" />
-                    </div>
-
-                    <div className="flex-1 w-full space-y-2">
-                      <input
-                        type="text"
-                        placeholder="Image URL, /assets/..., or upload"
-                        value={polaroid.photoUrl.startsWith("data:") ? "[Uploaded Image]" : polaroid.photoUrl}
-                        onChange={(e) => handlePolaroidChange(index, "photoUrl", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300 font-mono"
-                      />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Caption"
-                          value={polaroid.caption}
-                          onChange={(e) => handlePolaroidChange(index, "caption", e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300 font-bold"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Date / Occasion"
-                          value={polaroid.date || ""}
-                          onChange={(e) => handlePolaroidChange(index, "date", e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white rounded-lg text-xs border border-stone-300"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePolaroid(index)}
-                      className="p-2 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 self-end sm:self-center"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                    polaroid={polaroid}
+                    index={index}
+                    onUpdate={(field, val) => handlePolaroidChange(index, field, val)}
+                    onRemove={() => handleRemovePolaroid(index)}
+                  />
                 ))}
               </div>
             </div>
