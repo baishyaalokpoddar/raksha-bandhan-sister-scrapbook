@@ -54,8 +54,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <SoundToggle />
+          <Link
+            href="/sister/simran-khadka"
+            target="_blank"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 text-xs font-bold rounded-full border border-emerald-400/40 transition-all backdrop-blur-xs"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Live Review ↗</span>
+          </Link>
           <Link
             href="/create"
             className="px-4 py-2 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-bold rounded-full shadow-md flex items-center gap-1.5 transition-all transform active:scale-95 border border-white/40"
