@@ -230,9 +230,57 @@ export const createNewBlankSister = (selectedTheme: ScrapbookTheme = "chibi-anim
   };
 };
 
+/* Encode sister data into a safe UTF-8 base64 string */
+export const encodeSisterData = (sister: SisterGreeting): string => {
+  try {
+    const json = JSON.stringify(sister);
+    if (typeof window !== "undefined" && typeof btoa === "function") {
+      return encodeURIComponent(btoa(unescape(encodeURIComponent(json))));
+    }
+    return encodeURIComponent(Buffer.from(json, "utf-8").toString("base64"));
+  } catch (err) {
+    console.error("Failed to encode sister data:", err);
+    return "";
+  }
+};
+
+/* Decode UTF-8 base64 string back into sister data */
+export const decodeSisterData = (encoded: string): SisterGreeting | null => {
+  try {
+    const clean = decodeURIComponent(encoded);
+    let json = "";
+    if (typeof window !== "undefined" && typeof atob === "function") {
+      json = decodeURIComponent(escape(atob(clean)));
+    } else {
+      json = Buffer.from(clean, "base64").toString("utf-8");
+    }
+    const parsed = JSON.parse(json);
+    if (parsed && (parsed.sisterName || parsed.id)) {
+      return parsed as SisterGreeting;
+    }
+    return null;
+  } catch (err) {
+    console.error("Failed to decode sister data:", err);
+    return null;
+  }
+};
+
+/* Build universal share URL that works across ANY device, even without database */
+export const buildUniversalShareUrl = (sister: SisterGreeting, baseUrl: string): string => {
+  const isDemo = DEMO_SISTERS.some((d) => d.id.toLowerCase() === sister.id.toLowerCase());
+  if (isDemo) {
+    return `${baseUrl}/sister/${sister.id}/`;
+  }
+  const encoded = encodeSisterData(sister);
+  if (encoded) {
+    return `${baseUrl}/sister/sister-surprise/?id=${encodeURIComponent(sister.id)}&d=${encoded}`;
+  }
+  return `${baseUrl}/sister/${sister.id}/`;
+};
+
 /* Social Media Share URL Generators */
 export const getShareUrls = (sister: SisterGreeting, baseUrl: string) => {
-  const greetingUrl = `${baseUrl}/sister/${sister.id}`;
+  const greetingUrl = buildUniversalShareUrl(sister, baseUrl);
   const sisterName = sister.nickname || sister.sisterName || "Sister";
   const shareText = `Happy Raksha Bandhan ${sisterName}! ✨ I created a personalized, humorous scrapbook greeting for you. Open your surprise here:`;
 

@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SisterGreeting } from "@/lib/types";
-import { getShareUrls } from "@/lib/store";
+import { getShareUrls, buildUniversalShareUrl } from "@/lib/store";
 import { soundFx } from "@/lib/soundFx";
 
 interface SocialShareModalProps {
@@ -42,7 +42,7 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
   const handleCopyLink = () => {
     soundFx.playPop();
     if (typeof window !== "undefined") {
-      const fullUrl = `${window.location.origin}/sister/${sister.id}`;
+      const fullUrl = buildUniversalShareUrl(sister, window.location.origin);
       navigator.clipboard.writeText(fullUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -91,7 +91,7 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
           {/* 1-Click Copy Link Box */}
           <div className="bg-stone-50 p-3 rounded-2xl border border-stone-200 mb-4 flex items-center justify-between gap-2">
             <span className="text-xs font-mono text-stone-600 truncate" suppressHydrationWarning>
-              {mounted && origin ? `${origin}/sister/${sister.id}` : `/sister/${sister.id}`}
+              {mounted && origin ? buildUniversalShareUrl(sister, origin) : buildUniversalShareUrl(sister, "")}
             </span>
             <button
               onClick={handleCopyLink}

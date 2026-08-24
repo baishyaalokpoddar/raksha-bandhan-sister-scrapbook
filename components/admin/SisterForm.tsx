@@ -29,6 +29,7 @@ import {
   saveSisterGreeting,
   clearTemporaryCacheAndCookies,
   getStorageUsageKB,
+  buildUniversalShareUrl,
 } from "@/lib/store";
 import { PhotoUploader } from "./PhotoUploader";
 import { LabelEditor } from "./LabelEditor";
@@ -183,12 +184,12 @@ export const SisterForm: React.FC<SisterFormProps> = ({
     setTimeout(() => setSavedSuccess(false), 3500);
   };
 
-  const displayShareUrl = mounted && origin ? `${origin}/sister/${formData.id}` : `/sister/${formData.id}`;
+  const displayShareUrl = mounted && origin ? buildUniversalShareUrl(formData, origin) : buildUniversalShareUrl(formData, "");
 
   const handleCopyLink = () => {
     soundFx.playPop();
     if (typeof window !== "undefined") {
-      const fullUrl = `${window.location.origin}/sister/${formData.id}`;
+      const fullUrl = buildUniversalShareUrl(formData, window.location.origin);
       navigator.clipboard.writeText(fullUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2500);

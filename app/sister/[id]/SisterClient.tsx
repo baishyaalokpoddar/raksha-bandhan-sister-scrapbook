@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { getSisterById } from "@/lib/store";
+import { getSisterById, decodeSisterData, saveSisterGreeting } from "@/lib/store";
 import { SisterGreeting } from "@/lib/types";
 import { SisterExperienceViewer } from "@/components/scrapbook/SisterExperienceViewer";
 
@@ -11,10 +11,51 @@ export function SisterClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      // 1. Check for encoded data payload in URL query or hash
+      const urlParams = new URLSearchParams(window.location.search);
+      const dataParam = urlParams.get("d");
+      const idParam = urlParams.get("id");
+
+      if (dataParam) {
+        const decoded = decodeSisterData(dataParam);
+        if (decoded) {
+          saveSisterGreeting(decoded, false);
+          setSister(decoded);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Check hash in case URL had #d=...
+      if (window.location.hash.startsWith("#d=")) {
+        const hashData = window.location.hash.substring(3);
+        const decoded = decodeSisterData(hashData);
+        if (decoded) {
+          saveSisterGreeting(decoded, false);
+          setSister(decoded);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 2. Check by ID parameter from query or route
+      const effectiveId = idParam || id;
+      if (effectiveId) {
+        const found = getSisterById(effectiveId);
+        if (found) {
+          setSister(found);
+          setLoading(false);
+          return;
+        }
+      }
+    }
+
     if (!id) {
       setLoading(false);
       return;
     }
+
     const found = getSisterById(id);
     if (found) {
       setSister(found);
