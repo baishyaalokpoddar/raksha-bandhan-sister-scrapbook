@@ -1,6 +1,6 @@
 /**
  * Compresses and resizes an uploaded image file into an optimized Web base64 JPEG
- * Keeps the file size tiny (~20KB-45KB) so it saves reliably to localStorage and share URLs
+ * Keeps the file size tiny (~20KB-45KB) so it saves reliably to Cloudflare, localStorage, and share URLs
  */
 export const compressImageFile = (
   file: File,
@@ -56,4 +56,25 @@ export const compressImageFile = (
     reader.onerror = (err) => reject(err);
     reader.readAsDataURL(file);
   });
+};
+
+/**
+ * Uploads image to Cloudflare server endpoint with auto-fallback to compressed base64
+ */
+export const uploadImageToCloudflare = async (file: File): Promise<string> => {
+  const compressed = await compressImageFile(file, 600, 600, 0.72);
+  try {
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: compressed }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) return data.url;
+    }
+  } catch (err) {
+    console.warn("Cloudflare upload endpoint fallback to base64:", err);
+  }
+  return compressed;
 };

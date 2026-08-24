@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { Upload, Link as LinkIcon, Image as ImageIcon, Loader2 } from "lucide-react";
-import { compressImageFile } from "@/lib/imageUtils";
+import { compressImageFile, uploadImageToCloudflare } from "@/lib/imageUtils";
 import { soundFx } from "@/lib/soundFx";
 
 interface PhotoUploaderProps {
@@ -35,12 +35,12 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
     try {
       setIsUploading(true);
-      // Auto compress and optimize image to keep file size tiny (< 40KB)
-      const compressed = await compressImageFile(file, 600, 600, 0.72);
+      // Auto compress and upload to Cloudflare server
+      const serverUrl = await uploadImageToCloudflare(file);
       soundFx.playChime();
-      onChange(compressed);
+      onChange(serverUrl);
     } catch (err) {
-      console.error("Error compressing image:", err);
+      console.error("Error uploading image:", err);
       // Fallback to basic file reader
       const reader = new FileReader();
       reader.onload = (loadEvent) => {

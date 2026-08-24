@@ -33,7 +33,7 @@ import {
   getStorageUsageKB,
   buildUniversalShareUrl,
 } from "@/lib/store";
-import { compressImageFile } from "@/lib/imageUtils";
+import { compressImageFile, uploadImageToCloudflare } from "@/lib/imageUtils";
 import { PhotoUploader } from "./PhotoUploader";
 import { LabelEditor } from "./LabelEditor";
 import { LivePreviewModal } from "./LivePreviewModal";
@@ -71,11 +71,11 @@ const PolaroidRow: React.FC<PolaroidRowProps> = ({ polaroid, index, onUpdate, on
     if (!file) return;
     try {
       setUploading(true);
-      const compressed = await compressImageFile(file, 600, 600, 0.72);
+      const serverUrl = await uploadImageToCloudflare(file);
       soundFx.playChime();
-      onUpdate("photoUrl", compressed);
+      onUpdate("photoUrl", serverUrl);
     } catch (err) {
-      console.error("Failed to compress polaroid image:", err);
+      console.error("Failed to upload polaroid image:", err);
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (typeof ev.target?.result === "string") {
@@ -229,6 +229,8 @@ export const SisterForm: React.FC<SisterFormProps> = ({
   const [linkCopied, setLinkCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [origin, setOrigin] = useState("");
+  const clotheslineUploadRef = useRef<HTMLInputElement>(null);
+  const [isAddingClotheslinePhoto, setIsAddingClotheslinePhoto] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -270,6 +272,32 @@ export const SisterForm: React.FC<SisterFormProps> = ({
       rotation: (Math.random() - 0.5) * 6,
     };
     setFormData((prev) => ({ ...prev, polaroids: [...prev.polaroids, newPol] }));
+  };
+
+  const handleDirectClotheslineUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsAddingClotheslinePhoto(true);
+      const serverUrl = await uploadImageToCloudflare(file);
+      soundFx.playChime();
+      const newPol: PolaroidMemory = {
+        id: "p-" + Date.now(),
+        photoUrl: serverUrl,
+        caption: `Special Memory #${formData.polaroids.length + 1}`,
+        date: "Janai Purnima / Rakhi Memory",
+        rotation: (Math.random() - 0.5) * 6,
+      };
+      setFormData((prev) => ({ ...prev, polaroids: [...prev.polaroids, newPol] }));
+    } catch (err) {
+      console.error("Clothesline direct upload error:", err);
+    } finally {
+      setIsAddingClotheslinePhoto(false);
+      if (clotheslineUploadRef.current) {
+        clotheslineUploadRef.current.value = "";
+      }
+    }
   };
 
   const handleRemovePolaroid = (index: number) => {
@@ -742,22 +770,54 @@ export const SisterForm: React.FC<SisterFormProps> = ({
 
             {/* Clothesline Polaroid Memories */}
             <div className="pt-4 border-t border-stone-200">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                  <h4 className="font-bold text-stone-900 text-sm">
-                    5. Clothesline Polaroid Memories (Slide 7)
+                  <h4 className="font-bold text-stone-900 text-sm flex items-center gap-1.5">
+                    <span>5. Clothesline Polaroid Memories (Slide 7)</span>
+                    <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {formData.polaroids.length} Photos
+                    </span>
                   </h4>
                   <p className="text-xs text-stone-500">
-                    Memories hanging on the fairy lights clothesline.
+                    Memories hanging on the fairy lights clothesline. Upload photos directly from your phone or PC.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddPolaroid}
-                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Photo
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isAddingClotheslinePhoto}
+                    onClick={() => clotheslineUploadRef.current?.click()}
+                    className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    {isAddingClotheslinePhoto ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Uploading Photo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Photo</span>
+                      </>
+                    )}
+                  </button>
+                  <input
+                    ref={clotheslineUploadRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleDirectClotheslineUpload}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleAddPolaroid}
+                    className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl border border-stone-200 flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Blank Card
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-3.5">
