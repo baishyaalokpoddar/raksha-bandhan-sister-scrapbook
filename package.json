@@ -14,10 +14,21 @@
     "framer-motion": "^11.5.4",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.441.0",
-    "next": "14.2.35",
+    "next": "14.2.24",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.2"
+  },
+  "optionalDependencies": {
+    "@next/swc-darwin-arm64": "14.2.24",
+    "@next/swc-darwin-x64": "14.2.24",
+    "@next/swc-linux-arm64-gnu": "14.2.24",
+    "@next/swc-linux-arm64-musl": "14.2.24",
+    "@next/swc-linux-x64-gnu": "14.2.24",
+    "@next/swc-linux-x64-musl": "14.2.24",
+    "@next/swc-win32-arm64-msvc": "14.2.24",
+    "@next/swc-win32-ia32-msvc": "14.2.24",
+    "@next/swc-win32-x64-msvc": "14.2.24"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
